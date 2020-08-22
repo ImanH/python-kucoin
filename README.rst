@@ -1,6 +1,7 @@
 ===============================
-Welcome to python-kucoin v2.1.2
-===============================
+
+Welcome to python-kucoin v2.1.1  -- modified by ehossini
+
 
 .. image:: https://img.shields.io/pypi/v/python-kucoin.svg
     :target: https://pypi.python.org/pypi/python-kucoin
