@@ -76,6 +76,9 @@ class Client(object):
         self._requests_params = requests_params
         self.session = self._init_session()
 
+    def test(self):
+        return "This is a test"
+
     def _init_session(self):
 
         session = requests.session()
