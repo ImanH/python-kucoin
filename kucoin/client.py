@@ -44,26 +44,7 @@ class Client(object):
     TIMEINFORCE_FILL_OR_KILL = 'FOK'
 
     def __init__(self, api_key, api_secret, passphrase, sandbox=False, requests_params=None):
-        """Kucoin API Client constructor
-
-        https://docs.kucoin.com/
-
-        :param api_key: Api Token Id
-        :type api_key: string
-        :param api_secret: Api Secret
-        :type api_secret: string
-        :param passphrase: Api Passphrase used to create API
-        :type passphrase: string
-        :param sandbox: (optional) Use the sandbox endpoint or not (default False)
-        :type sandbox: bool
-        :param requests_params: (optional) Dictionary of requests params to use for all calls
-        :type requests_params: dict.
-
-        .. code:: python
-
-            client = Client(api_key, api_secret, api_passphrase)
-
-        """
+        # https://docs.kucoin.com/
 
         self.API_KEY = api_key
         self.API_SECRET = api_secret
@@ -101,15 +82,7 @@ class Client(object):
         return '&'.join(["{}={}".format(key, data[key]) for key in data])
 
     def _generate_signature(self, nonce, method, path, data):
-        """Generate the call signature
-
-        :param path:
-        :param data:
-        :param nonce:
-
-        :return: signature string
-
-        """
+        # Generate the call signature
 
         data_json = ""
         endpoint = path
@@ -162,7 +135,7 @@ class Client(object):
 
     @staticmethod
     def _handle_response(response):
-        """Internal helper for handling API responses from the Quoine server.
+        """Internal helper for handling API responses from the KuCoin server.
         Raises the appropriate exceptions when necessary; otherwise, returns the
         response.
         """
@@ -199,176 +172,41 @@ class Client(object):
         return self._request('delete', path, signed, **kwargs)
 
     def get_timestamp(self):
-        """Get the server timestamp
+        # https://docs.kucoin.com/#time
 
-        https://docs.kucoin.com/#time
-
-        :return: response timestamp in ms
-
-        """
         return self._get("timestamp")
 
     # Currency Endpoints
 
     def get_currencies(self):
-        """List known currencies
-
-        https://docs.kucoin.com/#get-currencies
-
-        .. code:: python
-
-            currencies = client.get_currencies()
-
-        :returns: API Response
-
-        .. code-block:: python
-
-            [
-                {
-                    "currency": "BTC",
-                    "name": "BTC",
-                    "fullName": "Bitcoin",
-                    "precision": 8
-                },
-                {
-                    "currency": "ETH",
-                    "name": "ETH",
-                    "fullName": "Ethereum",
-                    "precision": 7
-                }
-            ]
-
-        :raises:  KucoinResponseException, KucoinAPIException
-
-        """
+        # https://docs.kucoin.com/#get-currencies
 
         return self._get('currencies', False)
 
     def get_currency(self, currency):
-        """Get single currency detail
-
-        https://docs.kucoin.com/#get-currency-detail
-
-        .. code:: python
-
-            # call with no coins
-            currency = client.get_currency('BTC')
-
-        :returns: API Response
-
-        .. code-block:: python
-
-            {
-                "currency": "BTC",
-                "name": "BTC",
-                "fullName": "Bitcoin",
-                "precision": 8,
-                "withdrawalMinSize": "0.002",
-                "withdrawalMinFee": "0.0005",
-                "isWithdrawEnabled": true,
-                "isDepositEnabled": true
-            }
-
-        :raises:  KucoinResponseException, KucoinAPIException
-
-        """
+        # https://docs.kucoin.com/#get-currency-detail
 
         return self._get('currencies/{}'.format(currency), False)
 
     # User Account Endpoints
 
-    def get_accounts(self):
-        """Get a list of accounts
+    def get_accounts(self, currency=None):
+        # https://docs.kucoin.com/#accounts
 
-        https://docs.kucoin.com/#accounts
+        data = {}
 
-        .. code:: python
+        if currency:
+            data['currency'] = currency
 
-            accounts = client.get_accounts()
-
-        :returns: API Response
-
-        .. code-block:: python
-
-            [
-                {
-                    "id": "5bd6e9286d99522a52e458de",
-                    "currency": "BTC",
-                    "type": "main",
-                    "balance": "237582.04299",
-                    "available": "237582.032",
-                    "holds": "0.01099"
-                },
-                {
-                    "id": "5bd6e9216d99522a52e458d6",
-                    "currency": "BTC",
-                    "type": "trade",
-                    "balance": "1234356",
-                    "available": "1234356",
-                    "holds": "0"
-                }
-            ]
-
-        :raises:  KucoinResponseException, KucoinAPIException
-
-        """
-
-        return self._get('accounts', True)
+        return self._get('accounts', True, data=data)
 
     def get_account(self, account_id):
-        """Get an individual account
-
-        https://docs.kucoin.com/#get-an-account
-
-        :param account_id: ID for account - from list_accounts()
-        :type account_id: string
-
-        .. code:: python
-
-            account = client.get_account('5bd6e9216d99522a52e458d6')
-
-        :returns: API Response
-
-        .. code-block:: python
-
-            {
-                "currency": "KCS",
-                "balance": "1000000060.6299",
-                "available": "1000000060.6299",
-                "holds": "0"
-            }
-
-        :raises:  KucoinResponseException, KucoinAPIException
-
-        """
+        # https://docs.kucoin.com/#get-an-account
 
         return self._get('accounts/{}'.format(account_id), True)
 
     def create_account(self, account_type, currency):
-        """Create an account
-
-        https://docs.kucoin.com/#create-an-account
-
-        :param account_type: Account type - main or trade
-        :type account_type: string
-        :param currency: Currency code
-        :type currency: string
-
-        .. code:: python
-
-            account = client.create_account('trade', 'BTC')
-
-        :returns: API Response
-
-        .. code-block:: python
-
-            {
-                "id": "5bd6e9286d99522a52e458de"
-            }
-
-        :raises:  KucoinResponseException, KucoinAPIException
-
-        """
+        # https://docs.kucoin.com/#create-an-account
 
         data = {
             'type': account_type,
@@ -378,72 +216,7 @@ class Client(object):
         return self._post('accounts', True, data=data)
 
     def get_account_activity(self, account_id, start=None, end=None, page=None, limit=None):
-        """Get list of account activity
-
-        https://docs.kucoin.com/#get-account-history
-
-        :param account_id: ID for account - from list_accounts()
-        :type account_id: string
-        :param start: (optional) Start time as unix timestamp
-        :type start: string
-        :param end: (optional) End time as unix timestamp
-        :type end: string
-        :param page: (optional) Current page - default 1
-        :type page: int
-        :param limit: (optional) Number of results to return - default 50
-        :type limit: int
-
-        .. code:: python
-
-            history = client.get_account_activity('5bd6e9216d99522a52e458d6')
-
-            history = client.get_account_activity('5bd6e9216d99522a52e458d6', start='1540296039000')
-
-            history = client.get_account_activity('5bd6e9216d99522a52e458d6', page=2, page_size=10)
-
-        :returns: API Response
-
-        .. code-block:: python
-
-            {
-                "currentPage": 1,
-                "pageSize": 10,
-                "totalNum": 2,
-                "totalPage": 1,
-                "items": [
-                    {
-                        "currency": "KCS",
-                        "amount": "0.0998",
-                        "fee": "0",
-                        "balance": "1994.040596",
-                        "bizType": "withdraw",
-                        "direction": "in",
-                        "createdAt": 1540296039000,
-                        "context": {
-                             "orderId": "5bc7f080b39c5c03286eef8a",
-                             "currency": "BTC"
-                         }
-                    },
-                    {
-                        "currency": "KCS",
-                        "amount": "0.0998",
-                        "fee": "0",
-                        "balance": "1994.140396",
-                        "bizType": "trade exchange",
-                        "direction": "in",
-                        "createdAt": 1540296039000,
-                        "context": {
-                             "orderId": "5bc7f080b39c5c03286eef8e",
-                             "tradeId": "5bc7f080b3949c03286eef8a",
-                             "symbol": "BTC-USD"
-                        }
-                    }
-                ]
-            }
-
-        :raises:  KucoinResponseException, KucoinAPIException
-
-        """
+        # https://docs.kucoin.com/#get-account-history
 
         data = {}
         if start:
@@ -458,55 +231,7 @@ class Client(object):
         return self._get('accounts/{}/ledgers'.format(account_id), True, data=data)
 
     def get_account_holds(self, account_id, page=None, page_size=None):
-        """Get account holds placed for any active orders or pending withdraw requests
-
-        https://docs.kucoin.com/#get-holds
-
-        :param account_id: ID for account - from list_accounts()
-        :type account_id: string
-        :param page: (optional) Current page - default 1
-        :type page: int
-        :param page_size: (optional) Number of results to return - default 50
-        :type page_size: int
-
-        .. code:: python
-
-            holds = client.get_account_holds('5bd6e9216d99522a52e458d6')
-
-            holds = client.get_account_holds('5bd6e9216d99522a52e458d6', page=2, page_size=10)
-
-        :returns: API Response
-
-        .. code-block:: python
-
-            {
-                "currentPage": 1,
-                "pageSize": 10,
-                "totalNum": 2,
-                "totalPage": 1,
-                "items": [
-                    {
-                        "currency": "ETH",
-                        "holdAmount": "5083",
-                        "bizType": "Withdraw",
-                        "orderId": "5bc7f080b39c5c03286eef8e",
-                        "createdAt": 1545898567000,
-                        "updatedAt": 1545898567000
-                    },
-                    {
-                        "currency": "ETH",
-                        "holdAmount": "1452",
-                        "bizType": "Withdraw",
-                        "orderId": "5bc7f518b39c5c033818d62d",
-                        "createdAt": 1545898567000,
-                        "updatedAt": 1545898567000
-                    }
-                ]
-            }
-
-        :raises:  KucoinResponseException, KucoinAPIException
-
-        """
+        # https://docs.kucoin.com/#get-holds
 
         data = {}
         if page:
@@ -517,34 +242,7 @@ class Client(object):
         return self._get('accounts/{}/holds'.format(account_id), True, data=data)
 
     def create_inner_transfer(self, from_account_id, to_account_id, amount, order_id=None):
-        """Get account holds placed for any active orders or pending withdraw requests
-
-        https://docs.kucoin.com/#get-holds
-
-        :param from_account_id: ID of account to transfer funds from - from list_accounts()
-        :type from_account_id: str
-        :param to_account_id: ID of account to transfer funds to - from list_accounts()
-        :type to_account_id: str
-        :param amount: Amount to transfer
-        :type amount: int
-        :param order_id: (optional) Request ID (default flat_uuid())
-        :type order_id: string
-
-        .. code:: python
-
-            transfer = client.create_inner_transfer('5bd6e9216d99522a52e458d6', 5bc7f080b39c5c03286eef8e', 20)
-
-        :returns: API Response
-
-        .. code-block:: python
-
-            {
-                "orderId": "5bd6e9286d99522a52e458de"
-            }
-
-        :raises:  KucoinResponseException, KucoinAPIException
-
-        """
+        # https://docs.kucoin.com/#get-holds
 
         data = {
             'payAccountId': from_account_id,
@@ -562,29 +260,7 @@ class Client(object):
     # Deposit Endpoints
 
     def create_deposit_address(self, currency):
-        """Create deposit address of currency for deposit. You can just create one deposit address.
-
-        https://docs.kucoin.com/#create-deposit-address
-
-        :param currency: Name of currency
-        :type currency: string
-
-        .. code:: python
-
-            address = client.create_deposit_address('NEO')
-
-        :returns: ApiResponse
-
-        .. code:: python
-
-            {
-                "address": "0x78d3ad1c0aa1bf068e19c94a2d7b16c9c0fcd8b1",
-                "memo": "5c247c8a03aa677cea2a251d"
-            }
-
-        :raises: KucoinResponseException, KucoinAPIException
-
-        """
+        # https://docs.kucoin.com/#create-deposit-address
 
         data = {
             'currency': currency
@@ -593,29 +269,7 @@ class Client(object):
         return self._post('deposit-addresses', True, data=data)
 
     def get_deposit_address(self, currency):
-        """Get deposit address for a currency
-
-        https://docs.kucoin.com/#get-deposit-address
-
-        :param currency: Name of currency
-        :type currency: string
-
-        .. code:: python
-
-            address = client.get_deposit_address('NEO')
-
-        :returns: ApiResponse
-
-        .. code:: python
-
-            {
-                "address": "0x78d3ad1c0aa1bf068e19c94a2d7b16c9c0fcd8b1",
-                "memo": "5c247c8a03aa677cea2a251d"
-            }
-
-        :raises: KucoinResponseException, KucoinAPIException
-
-        """
+        # https://docs.kucoin.com/#get-deposit-address
 
         data = {
             'currency': currency
@@ -624,66 +278,7 @@ class Client(object):
         return self._get('deposit-addresses', True, data=data)
 
     def get_deposits(self, currency=None, status=None, start=None, end=None, page=None, limit=None):
-        """Get deposit records for a currency
-
-        https://docs.kucoin.com/#get-deposit-list
-
-        :param currency: Name of currency (optional)
-        :type currency: string
-        :param status: optional - Status of deposit (PROCESSING, SUCCESS, FAILURE)
-        :type status: string
-        :param start: (optional) Start time as unix timestamp
-        :type start: string
-        :param end: (optional) End time as unix timestamp
-        :type end: string
-        :param page: (optional) Page to fetch
-        :type page: int
-        :param limit: (optional) Number of transactions
-        :type limit: int
-
-        .. code:: python
-
-            deposits = client.get_deposits('NEO')
-
-        :returns: ApiResponse
-
-        .. code:: python
-
-            {
-                "currentPage": 1,
-                "pageSize": 5,
-                "totalNum": 2,
-                "totalPage": 1,
-                "items": [
-                    {
-                        "address": "0x5f047b29041bcfdbf0e4478cdfa753a336ba6989",
-                        "memo": "5c247c8a03aa677cea2a251d",
-                        "amount": 1,
-                        "fee": 0.0001,
-                        "currency": "KCS",
-                        "isInner": false,
-                        "walletTxId": "5bbb57386d99522d9f954c5a@test004",
-                        "status": "SUCCESS",
-                        "createdAt": 1544178843000,
-                        "updatedAt": 1544178891000
-                    }, {
-                        "address": "0x5f047b29041bcfdbf0e4478cdfa753a336ba6989",
-                        "memo": "5c247c8a03aa677cea2a251d",
-                        "amount": 1,
-                        "fee": 0.0001,
-                        "currency": "KCS",
-                        "isInner": false,
-                        "walletTxId": "5bbb57386d99522d9f954c5a@test003",
-                        "status": "SUCCESS",
-                        "createdAt": 1544177654000,
-                        "updatedAt": 1544178733000
-                    }
-                ]
-            }
-
-        :raises: KucoinResponseException, KucoinAPIException
-
-        """
+       # https://docs.kucoin.com/#get-deposit-list
 
         data = {}
         if currency:
@@ -704,56 +299,7 @@ class Client(object):
     # Withdraw Endpoints
 
     def get_withdrawals(self, currency=None, status=None, start=None, end=None, page=None, limit=None):
-        """Get deposit records for a currency
-
-        https://docs.kucoin.com/#get-withdrawals-list
-
-        :param currency: Name of currency (optional)
-        :type currency: string
-        :param status: optional - Status of deposit (PROCESSING, SUCCESS, FAILURE)
-        :type status: string
-        :param start: (optional) Start time as unix timestamp
-        :type start: string
-        :param end: (optional) End time as unix timestamp
-        :type end: string
-        :param page: (optional) Page to fetch
-        :type page: int
-        :param limit: (optional) Number of transactions
-        :type limit: int
-
-        .. code:: python
-
-            withdrawals = client.get_withdrawals('NEO')
-
-        :returns: ApiResponse
-
-        .. code:: python
-
-            {
-                "currentPage": 1,
-                "pageSize": 10,
-                "totalNum": 1,
-                "totalPage": 1,
-                "items": [
-                    {
-                        "id": "5c2dc64e03aa675aa263f1ac",
-                        "address": "0x5bedb060b8eb8d823e2414d82acce78d38be7fe9",
-                        "memo": "",
-                        "currency": "ETH",
-                        "amount": 1.0000000,
-                        "fee": 0.0100000,
-                        "walletTxId": "3e2414d82acce78d38be7fe9",
-                        "isInner": false,
-                        "status": "FAILURE",
-                        "createdAt": 1546503758000,
-                        "updatedAt": 1546504603000
-                    }
-                ]
-            }
-
-        :raises: KucoinResponseException, KucoinAPIException
-
-        """
+        # https://docs.kucoin.com/#get-withdrawals-list
 
         data = {}
         if currency:
@@ -772,36 +318,7 @@ class Client(object):
         return self._get('withdrawals', True, data=data)
 
     def get_withdrawal_quotas(self, currency):
-        """Get withdrawal quotas for a currency
-
-        https://docs.kucoin.com/#get-withdrawal-quotas
-
-        :param currency: Name of currency
-        :type currency: string
-
-        .. code:: python
-
-            quotas = client.get_withdrawal_quotas('ETH')
-
-        :returns: ApiResponse
-
-        .. code:: python
-
-            {
-                "currency": "ETH",
-                "availableAmount": 2.9719999,
-                "remainAmount": 2.9719999,
-                "withdrawMinSize": 0.1000000,
-                "limitBTCAmount": 2.0,
-                "innerWithdrawMinFee": 0.00001,
-                "isWithdrawEnabled": true,
-                "withdrawMinFee": 0.0100000,
-                "precision": 7
-            }
-
-        :raises: KucoinResponseException, KucoinAPIException
-
-        """
+        # https://docs.kucoin.com/#get-withdrawal-quotas
 
         data = {
             'currency': currency
@@ -810,38 +327,7 @@ class Client(object):
         return self._get('withdrawals/quotas', True, data=data)
 
     def create_withdrawal(self, currency, amount, address, memo=None, is_inner=False, remark=None):
-        """Process a withdrawal
-
-        https://docs.kucoin.com/#apply-withdraw
-
-        :param currency: Name of currency
-        :type currency: string
-        :param amount: Amount to withdraw
-        :type amount: number
-        :param address: Address to withdraw to
-        :type address: string
-        :param memo: (optional) Remark to the withdrawal address
-        :type memo: string
-        :param is_inner: (optional) Remark to the withdrawal address
-        :type is_inner: bool
-        :param remark: (optional) Remark
-        :type remark: string
-
-        .. code:: python
-
-            withdrawal = client.create_withdrawal('NEO', 20, '598aeb627da3355fa3e851')
-
-        :returns: ApiResponse
-
-        .. code:: python
-
-            {
-                "withdrawalId": "5bffb63303aa675e8bbe18f9"
-            }
-
-        :raises: KucoinResponseException, KucoinAPIException
-
-        """
+        # https://docs.kucoin.com/#apply-withdraw
 
         data = {
             'currency': currency,
@@ -859,64 +345,14 @@ class Client(object):
         return self._post('withdrawals', True, data=data)
 
     def cancel_withdrawal(self, withdrawal_id):
-        """Cancel a withdrawal
-
-        https://docs.kucoin.com/#cancel-withdrawal
-
-        :param withdrawal_id: ID of withdrawal
-        :type withdrawal_id: string
-
-        .. code:: python
-
-            client.cancel_withdrawal('5bffb63303aa675e8bbe18f9')
-
-        :returns: None
-
-        :raises: KucoinResponseException, KucoinAPIException
-
-        """
+        # https://docs.kucoin.com/#cancel-withdrawal
 
         return self._delete('withdrawals/{}'.format(withdrawal_id), True)
 
     # Order Endpoints
 
     def create_market_order(self, symbol, side, size=None, funds=None, client_oid=None, remark=None, stp=None):
-        """Create a market order
-
-        One of size or funds must be set
-
-        https://docs.kucoin.com/#place-a-new-order
-
-        :param symbol: Name of symbol e.g. KCS-BTC
-        :type symbol: string
-        :param side: buy or sell
-        :type side: string
-        :param size: (optional) Desired amount in base currency
-        :type size: string
-        :param funds: (optional) Desired amount of quote currency to use
-        :type funds: string
-        :param client_oid: (optional) Unique order id (default flat_uuid())
-        :type client_oid: string
-        :param remark: (optional) remark for the order, max 100 utf8 characters
-        :type remark: string
-        :param stp: (optional) self trade protection CN, CO, CB or DC (default is None)
-        :type stp: string
-
-        .. code:: python
-
-            order = client.create_market_order('NEO', Client.SIDE_BUY, size=20)
-
-        :returns: ApiResponse
-
-        .. code:: python
-
-            {
-                "orderOid": "596186ad07015679730ffa02"
-            }
-
-        :raises: KucoinResponseException, KucoinAPIException, MarketOrderException
-
-        """
+        # https://docs.kucoin.com/#place-a-new-order
 
         if not size and not funds:
             raise MarketOrderException('Need size or fund parameter')
@@ -948,58 +384,7 @@ class Client(object):
     def create_limit_order(self, symbol, side, price, size, client_oid=None, remark=None,
                            time_in_force=None, stop=None, stop_price=None, stp=None, cancel_after=None, post_only=None,
                            hidden=None, iceberg=None, visible_size=None):
-        """Create an order
-
-        https://docs.kucoin.com/#place-a-new-order
-
-        :param symbol: Name of symbol e.g. KCS-BTC
-        :type symbol: string
-        :param side: buy or sell
-        :type side: string
-        :param price: Name of coin
-        :type price: string
-        :param size: Amount of base currency to buy or sell
-        :type size: string
-        :param client_oid: (optional) Unique order_id  default flat_uuid()
-        :type client_oid: string
-        :param remark: (optional) remark for the order, max 100 utf8 characters
-        :type remark: string
-        :param stp: (optional) self trade protection CN, CO, CB or DC (default is None)
-        :type stp: string
-        :param time_in_force: (optional) GTC, GTT, IOC, or FOK (default is GTC)
-        :type time_in_force: string
-        :param stop: (optional) stop type loss or entry - requires stop_price
-        :type stop: string
-        :param stop_price: (optional) trigger price for stop order
-        :type stop_price: string
-        :param cancel_after: (optional) number of seconds to cancel the order if not filled
-            required time_in_force to be GTT
-        :type cancel_after: string
-        :param post_only: (optional) indicates that the order should only make liquidity. If any part of
-            the order results in taking liquidity, the order will be rejected and no part of it will execute.
-        :type post_only: bool
-        :param hidden: (optional) Orders not displayed in order book
-        :type hidden: bool
-        :param iceberg:  (optional) Only visible portion of the order is displayed in the order book
-        :type iceberg: bool
-        :param visible_size: (optional) The maximum visible size of an iceberg order
-        :type visible_size: bool
-
-        .. code:: python
-
-            order = client.create_limit_order('KCS-BTC', Client.SIDE_BUY, '0.01', '1000')
-
-        :returns: ApiResponse
-
-        .. code:: python
-
-            {
-                "orderOid": "596186ad07015679730ffa02"
-            }
-
-        :raises: KucoinResponseException, KucoinAPIException, LimitOrderException
-
-        """
+        # https://docs.kucoin.com/#place-a-new-order
 
         if stop and not stop_price:
             raise LimitOrderException('Stop order needs stop_price')
@@ -1050,57 +435,13 @@ class Client(object):
         return self._post('orders', True, data=data)
 
     def cancel_order(self, order_id):
-        """Cancel an order
-
-        https://docs.kucoin.com/#cancel-an-order
-
-        :param order_id: Order id
-        :type order_id: string
-
-        .. code:: python
-
-            res = client.cancel_order('5bd6e9286d99522a52e458de)
-
-        :returns: ApiResponse
-
-        .. code:: python
-
-            {
-                "cancelledOrderIds": [
-                    "5bd6e9286d99522a52e458de"
-                ]
-            }
-
-        :raises: KucoinResponseException, KucoinAPIException
-
-        KucoinAPIException If order_id is not found
-
-        """
+        # https://docs.kucoin.com/#cancel-an-order
 
         return self._delete('orders/{}'.format(order_id), True)
 
     def cancel_all_orders(self, symbol=None):
-        """Cancel all orders
+        # https://docs.kucoin.com/#cancel-all-orders
 
-        https://docs.kucoin.com/#cancel-all-orders
-
-        .. code:: python
-
-            res = client.cancel_all_orders()
-
-        :returns: ApiResponse
-
-        .. code:: python
-
-            {
-                "cancelledOrderIds": [
-                    "5bd6e9286d99522a52e458de"
-                ]
-            }
-
-        :raises: KucoinResponseException, KucoinAPIException
-
-        """
         data = {}
         if symbol is not None:
             data['symbol'] = symbol
@@ -1108,78 +449,7 @@ class Client(object):
 
     def get_orders(self, symbol=None, status=None, side=None, order_type=None,
                    start=None, end=None, page=None, limit=None):
-        """Get list of orders
-
-        https://docs.kucoin.com/#list-orders
-
-        :param symbol: (optional) Name of symbol e.g. KCS-BTC
-        :type symbol: string
-        :param status: (optional) Specify status active or done (default done)
-        :type status: string
-        :param side: (optional) buy or sell
-        :type side: string
-        :param order_type: (optional) limit, market, limit_stop or market_stop
-        :type order_type: string
-        :param start: (optional) Start time as unix timestamp
-        :type start: string
-        :param end: (optional) End time as unix timestamp
-        :type end: string
-        :param page: (optional) Page to fetch
-        :type page: int
-        :param limit: (optional) Number of orders
-        :type limit: int
-
-        .. code:: python
-
-            orders = client.get_orders(symbol='KCS-BTC', status='active')
-
-        :returns: ApiResponse
-
-        .. code:: python
-
-            {
-                "currentPage": 1,
-                "pageSize": 1,
-                "totalNum": 153408,
-                "totalPage": 153408,
-                "items": [
-                    {
-                        "id": "5c35c02703aa673ceec2a168",
-                        "symbol": "BTC-USDT",
-                        "opType": "DEAL",
-                        "type": "limit",
-                        "side": "buy",
-                        "price": "10",
-                        "size": "2",
-                        "funds": "0",
-                        "dealFunds": "0.166",
-                        "dealSize": "2",
-                        "fee": "0",
-                        "feeCurrency": "USDT",
-                        "stp": "",
-                        "stop": "",
-                        "stopTriggered": false,
-                        "stopPrice": "0",
-                        "timeInForce": "GTC",
-                        "postOnly": false,
-                        "hidden": false,
-                        "iceberge": false,
-                        "visibleSize": "0",
-                        "cancelAfter": 0,
-                        "channel": "IOS",
-                        "clientOid": null,
-                        "remark": null,
-                        "tags": null,
-                        "isActive": false,
-                        "cancelExist": false,
-                        "createdAt": 1547026471000
-                    }
-                ]
-            }
-
-        :raises: KucoinResponseException, KucoinAPIException
-
-        """
+        # https://docs.kucoin.com/#list-orders
 
         data = {}
 
@@ -1204,52 +474,7 @@ class Client(object):
 
     def get_historical_orders(self, symbol=None, side=None,
                               start=None, end=None, page=None, limit=None):
-        """List of KuCoin V1 historical orders.
-
-        https://docs.kucoin.com/#get-v1-historical-orders-list
-
-        :param symbol: (optional) Name of symbol e.g. KCS-BTC
-        :type symbol: string
-        :param side: (optional) buy or sell
-        :type side: string
-        :param start: (optional) Start time as unix timestamp
-        :type start: string
-        :param end: (optional) End time as unix timestamp
-        :type end: string
-        :param page: (optional) Page to fetch
-        :type page: int
-        :param limit: (optional) Number of orders
-        :type limit: int
-
-        .. code:: python
-
-            orders = client.get_historical_orders(symbol='KCS-BTC')
-
-        :returns: ApiResponse
-
-        .. code:: python
-
-            {
-                "currentPage": 1,
-                "pageSize": 50,
-                "totalNum": 1,
-                "totalPage": 1,
-                "items": [
-                    {
-                        "symbol": "SNOV-ETH",
-                        "dealPrice": "0.0000246",
-                        "dealValue": "0.018942",
-                        "amount": "770",
-                        "fee": "0.00001137",
-                        "side": "sell",
-                        "createdAt": 1540080199
-                    }
-                ]
-            }
-
-        :raises: KucoinResponseException, KucoinAPIException
-
-        """
+        # https://docs.kucoin.com/#get-v1-historical-orders-list
 
         data = {}
 
@@ -1269,56 +494,7 @@ class Client(object):
         return self._get('hist-orders', True, data=data)
 
     def get_order(self, order_id):
-        """Get order details
-
-        https://docs.kucoin.com/#get-an-order
-
-        :param order_id: orderOid value
-        :type order_id: str
-
-        .. code:: python
-
-            order = client.get_order('5c35c02703aa673ceec2a168')
-
-        :returns: ApiResponse
-
-        .. code:: python
-
-            {
-                "id": "5c35c02703aa673ceec2a168",
-                "symbol": "BTC-USDT",
-                "opType": "DEAL",
-                "type": "limit",
-                "side": "buy",
-                "price": "10",
-                "size": "2",
-                "funds": "0",
-                "dealFunds": "0.166",
-                "dealSize": "2",
-                "fee": "0",
-                "feeCurrency": "USDT",
-                "stp": "",
-                "stop": "",
-                "stopTriggered": false,
-                "stopPrice": "0",
-                "timeInForce": "GTC",
-                "postOnly": false,
-                "hidden": false,
-                "iceberge": false,
-                "visibleSize": "0",
-                "cancelAfter": 0,
-                "channel": "IOS",
-                "clientOid": null,
-                "remark": null,
-                "tags": null,
-                "isActive": false,
-                "cancelExist": false,
-                "createdAt": 1547026471000
-            }
-
-        :raises: KucoinResponseException, KucoinAPIException
-
-        """
+        # https://docs.kucoin.com/#get-an-order
 
         return self._get('orders/{}'.format(order_id), True)
 
@@ -1326,64 +502,7 @@ class Client(object):
 
     def get_fills(self, order_id=None, symbol=None, side=None, order_type=None,
                   start=None, end=None, page=None, limit=None):
-        """Get a list of recent fills.
-
-        https://docs.kucoin.com/#list-fills
-
-        :param order_id: (optional) generated order id
-        :type order_id: string
-        :param symbol: (optional) Name of symbol e.g. KCS-BTC
-        :type symbol: string
-        :param side: (optional) buy or sell
-        :type side: string
-        :param order_type: (optional) limit, market, limit_stop or market_stop
-        :type order_type: string
-        :param start: Start time as unix timestamp (optional)
-        :type start: string
-        :param end: End time as unix timestamp (optional)
-        :type end: string
-        :param page: optional - Page to fetch
-        :type page: int
-        :param limit: optional - Number of orders
-        :type limit: int
-        .. code:: python
-
-            fills = client.get_fills()
-
-        :returns: ApiResponse
-
-        .. code:: python
-
-            {
-                "currentPage":1,
-                "pageSize":1,
-                "totalNum":251915,
-                "totalPage":251915,
-                "items":[
-                    {
-                        "symbol":"BTC-USDT",
-                        "tradeId":"5c35c02709e4f67d5266954e",
-                        "orderId":"5c35c02703aa673ceec2a168",
-                        "counterOrderId":"5c1ab46003aa676e487fa8e3",
-                        "side":"buy",
-                        "liquidity":"taker",
-                        "forceTaker":true,
-                        "price":"0.083",
-                        "size":"0.8424304",
-                        "funds":"0.0699217232",
-                        "fee":"0",
-                        "feeRate":"0",
-                        "feeCurrency":"USDT",
-                        "stop":"",
-                        "type":"limit",
-                        "createdAt":1547026472000
-                    }
-                ]
-            }
-
-        :raises: KucoinResponseException, KucoinAPIException
-
-        """
+        # https://docs.kucoin.com/#list-fills
 
         data = {}
 
@@ -1409,72 +528,13 @@ class Client(object):
     # Market Endpoints
 
     def get_symbols(self):
-        """Get a list of available currency pairs for trading.
-
-        https://docs.kucoin.com/#symbols-amp-ticker
-
-        .. code:: python
-
-            symbols = client.get_symbols()
-
-        :returns: ApiResponse
-
-        .. code:: python
-
-            [
-                {
-                    "symbol": "BTC-USDT",
-                    "name": "BTC-USDT",
-                    "baseCurrency": "BTC",
-                    "quoteCurrency": "USDT",
-                    "baseMinSize": "0.00000001",
-                    "quoteMinSize": "0.01",
-                    "baseMaxSize": "10000",
-                    "quoteMaxSize": "100000",
-                    "baseIncrement": "0.00000001",
-                    "quoteIncrement": "0.01",
-                    "priceIncrement": "0.00000001",
-                    "enableTrading": true
-                }
-            ]
-
-        :raises: KucoinResponseException, KucoinAPIException
-
-        """
+        # https://docs.kucoin.com/#symbols-amp-ticker
 
         return self._get('symbols', False)
 
     def get_ticker(self, symbol=None):
-        """Get symbol tick
+        # https://docs.kucoin.com/#get-ticker
 
-        https://docs.kucoin.com/#get-ticker
-
-        :param symbol: (optional) Name of symbol e.g. KCS-BTC
-        :type symbol: string
-
-        .. code:: python
-
-            all_ticks = client.get_ticker()
-
-            ticker = client.get_ticker('ETH-BTC')
-
-        :returns: ApiResponse
-
-        .. code:: python
-
-            {
-                "sequence": "1545825031840",      # now sequence
-                "price": "3494.367783",           # last trade price
-                "size": "0.05027185",             # last trade size
-                "bestBid": "3494.367783",         # best bid price
-                "bestBidSize": "2.60323254",      # size at best bid price
-                "bestAsk": "3499.12",             # best ask price
-                "bestAskSize": "0.01474011"       # size at best ask price
-            }
-
-        :raises: KucoinResponseException, KucoinAPIException
-
-        """
         data = {}
         tick_path = 'market/allTickers'
         if symbol is not None:
@@ -1485,34 +545,7 @@ class Client(object):
         return self._get(tick_path, False, data=data)
 
     def get_fiat_prices(self, base=None, symbol=None):
-        """Get fiat price for currency
-
-        https://docs.kucoin.com/#get-fiat-price
-
-        :param base: (optional) Fiat,eg.USD,EUR, default is USD.
-        :type base: string
-        :param symbol: (optional) Cryptocurrencies.For multiple cyrptocurrencies, please separate them with
-                       comma one by one. default is all
-        :type symbol: string
-
-        .. code:: python
-
-            prices = client.get_fiat_prices()
-
-        :returns: ApiResponse
-
-        .. code:: python
-
-            {
-                "BTC": "3911.28000000",
-                "ETH": "144.55492453",
-                "LTC": "48.45888179",
-                "KCS": "0.45546856"
-            }
-
-        :raises: KucoinResponseException, KucoinAPIException
-
-        """
+        # https://docs.kucoin.com/#get-fiat-price
 
         data = {}
 
@@ -1524,37 +557,7 @@ class Client(object):
         return self._get('prices', False, data=data)
 
     def get_24hr_stats(self, symbol):
-        """Get 24hr stats for a symbol. Volume is in base currency units. open, high, low are in quote currency units.
-
-        :param symbol: (optional) Name of symbol e.g. KCS-BTC
-        :type symbol: string
-
-        .. code:: python
-
-            stats = client.get_24hr_stats('ETH-BTC')
-
-        :returns: ApiResponse
-
-        Without a symbol param
-
-        .. code:: python
-
-            {
-                "symbol": "BTC-USDT",
-                "changeRate": "0.0128",   # 24h change rate
-                "changePrice": "0.8",     # 24h rises and falls in price (if the change rate is a negative number,
-                                          # the price rises; if the change rate is a positive number, the price falls.)
-                "open": 61,               # Opening price
-                "close": 63.6,            # Closing price
-                "high": "63.6",           # Highest price filled
-                "low": "61",              # Lowest price filled
-                "vol": "244.78",          # Transaction quantity
-                "volValue": "15252.0127"  # Transaction amount
-            }
-
-        :raises: KucoinResponseException, KucoinAPIException
-
-        """
+        # Get 24hr stats for a symbol. Volume is in base currency units. open, high, low are in quote currency units.
 
         data = {
             'symbol': symbol
@@ -1563,64 +566,12 @@ class Client(object):
         return self._get('market/stats', False, data=data)
 
     def get_markets(self):
-        """Get supported market list
+        # https://docs.kucoin.com/#get-market-list
 
-        https://docs.kucoin.com/#get-market-list
-
-        .. code:: python
-
-            markets = client.get_markets()
-
-        :returns: ApiResponse
-
-        .. code:: python
-
-            {
-                "data": [
-                    "BTC",
-                    "ETH",
-                    "USDT"
-                ]
-            }
-
-        :raises: KucoinResponseException, KucoinAPIException
-
-        """
         return self._get('markets', False)
 
     def get_order_book(self, symbol):
-        """Get a list of bids and asks aggregated by price for a symbol.
-
-        Returns up to 100 depth each side. Fastest Order book API
-
-        https://docs.kucoin.com/#get-part-order-book-aggregated
-
-        :param symbol: Name of symbol e.g. KCS-BTC
-        :type symbol: string
-
-        .. code:: python
-
-            orders = client.get_order_book('KCS-BTC')
-
-        :returns: ApiResponse
-
-        .. code:: python
-
-            {
-                "sequence": "3262786978",
-                "bids": [
-                    ["6500.12", "0.45054140"],  # [price, size]
-                    ["6500.11", "0.45054140"]
-                ],
-                "asks": [
-                    ["6500.16", "0.57753524"],
-                    ["6500.15", "0.57753524"]
-                ]
-            }
-
-        :raises: KucoinResponseException, KucoinAPIException
-
-        """
+        # https://docs.kucoin.com/#get-part-order-book-aggregated
 
         data = {
             'symbol': symbol
@@ -1629,39 +580,7 @@ class Client(object):
         return self._get('market/orderbook/level2_100', False, data=data)
 
     def get_full_order_book(self, symbol):
-        """Get a list of all bids and asks aggregated by price for a symbol.
-
-        This call is generally used by professional traders because it uses more server resources and traffic,
-        and Kucoin has strict access frequency control.
-
-        https://docs.kucoin.com/#get-full-order-book-aggregated
-
-        :param symbol: Name of symbol e.g. KCS-BTC
-        :type symbol: string
-
-        .. code:: python
-
-            orders = client.get_order_book('KCS-BTC')
-
-        :returns: ApiResponse
-
-        .. code:: python
-
-            {
-                "sequence": "3262786978",
-                "bids": [
-                    ["6500.12", "0.45054140"],  # [price size]
-                    ["6500.11", "0.45054140"]
-                ],
-                "asks": [
-                    ["6500.16", "0.57753524"],
-                    ["6500.15", "0.57753524"]
-                ]
-            }
-
-        :raises: KucoinResponseException, KucoinAPIException
-
-        """
+        # https://docs.kucoin.com/#get-full-order-book-aggregated
 
         data = {
             'symbol': symbol
@@ -1670,55 +589,7 @@ class Client(object):
         return self._get('market/orderbook/level2', False, data=data)
 
     def get_full_order_book_level3(self, symbol):
-        """Get a list of all bids and asks non-aggregated for a symbol.
-
-        This call is generally used by professional traders because it uses more server resources and traffic,
-        and Kucoin has strict access frequency control.
-
-        https://docs.kucoin.com/#get-full-order-book-atomic
-
-        :param symbol: Name of symbol e.g. KCS-BTC
-        :type symbol: string
-
-        .. code:: python
-
-            orders = client.get_order_book('KCS-BTC')
-
-        :returns: ApiResponse
-
-        .. code:: python
-
-            {
-                "sequence": "1545896707028",
-                "bids": [
-                    [
-                        "5c2477e503aa671a745c4057",   # orderId
-                        "6",                          # price
-                        "0.999"                       # size
-                    ],
-                    [
-                        "5c2477e103aa671a745c4054",
-                        "5",
-                        "0.999"
-                    ]
-                ],
-                "asks": [
-                    [
-                        "5c24736703aa671a745c401e",
-                        "200",
-                        "1"
-                    ],
-                    [
-                        "5c2475c903aa671a745c4033",
-                        "201",
-                        "1"
-                    ]
-                ]
-            }
-
-        :raises: KucoinResponseException, KucoinAPIException
-
-        """
+        # https://docs.kucoin.com/#get-full-order-book-atomic
 
         data = {
             'symbol': symbol
@@ -1727,41 +598,7 @@ class Client(object):
         return self._get('market/orderbook/level3', False, data=data)
 
     def get_trade_histories(self, symbol):
-        """List the latest trades for a symbol
-
-        https://docs.kucoin.com/#get-trade-histories
-
-        :param symbol: Name of symbol e.g. KCS-BTC
-        :type symbol: string
-
-        .. code:: python
-
-            orders = client.get_trade_histories('KCS-BTC')
-
-        :returns: ApiResponse
-
-        .. code:: python
-
-            [
-                {
-                    "sequence": "1545896668571",
-                    "price": "0.07",                # Filled price
-                    "size": "0.004",                # Filled amount
-                    "side": "buy",                  # Filled side. The filled side is set to the taker by default.
-                    "time": 1545904567062140823     # Transaction time
-                },
-                {
-                    "sequence": "1545896668578",
-                    "price": "0.054",
-                    "size": "0.066",
-                    "side": "buy",
-                    "time": 1545904581619888405
-                }
-            ]
-
-        :raises: KucoinResponseException, KucoinAPIException
-
-        """
+        # https://docs.kucoin.com/#get-trade-histories
 
         data = {
             'symbol': symbol
@@ -1770,55 +607,7 @@ class Client(object):
         return self._get('market/histories', False, data=data)
 
     def get_kline_data(self, symbol, kline_type='5min', start=None, end=None):
-        """Get kline data
-
-        For each query, the system would return at most 1500 pieces of data.
-        To obtain more data, please page the data by time.
-
-        :param symbol: Name of symbol e.g. KCS-BTC
-        :type symbol: string
-        :param kline_type: type of symbol, type of candlestick patterns: 1min, 3min, 5min, 15min, 30min, 1hour, 2hour,
-                           4hour, 6hour, 8hour, 12hour, 1day, 1week
-        :type kline_type: string
-        :param start: Start time as unix timestamp (optional) default start of day in UTC
-        :type start: int
-        :param end: End time as unix timestamp (optional) default now in UTC
-        :type end: int
-
-        https://docs.kucoin.com/#get-historic-rates
-
-        .. code:: python
-
-            klines = client.get_kline_data('KCS-BTC', '5min', 1507479171, 1510278278)
-
-        :returns: ApiResponse
-
-        .. code:: python
-
-            [
-                [
-                    "1545904980",             //Start time of the candle cycle
-                    "0.058",                  //opening price
-                    "0.049",                  //closing price
-                    "0.058",                  //highest price
-                    "0.049",                  //lowest price
-                    "0.018",                  //Transaction amount
-                    "0.000945"                //Transaction volume
-                ],
-                [
-                    "1545904920",
-                    "0.058",
-                    "0.072",
-                    "0.072",
-                    "0.058",
-                    "0.103",
-                    "0.006986"
-                ]
-            ]
-
-        :raises: KucoinResponseException, KucoinAPIException
-
-        """
+        # https://docs.kucoin.com/#get-historic-rates
 
         data = {
             'symbol': symbol
@@ -1837,43 +626,48 @@ class Client(object):
 
         return self._get('market/candles', False, data=data)
 
+    # Lending Endpoints
+
+    def get_lending_orderbook(self, currency):
+        # https://docs.kucoin.com/#lending-market-data
+
+        data = {
+            'currency':currency
+        }
+
+        return self._get('margin/market', False, data=data)
+
+    def create_lending_order(self, currency, size, dailyIntRate, term):
+        # https://docs.kucoin.com/#post-lend-order
+
+        data = {
+            'currency':currency,
+            'size':size,
+            'dailyIntRate':dailyIntRate,
+            'term':term
+        }
+
+        return self._post('margin/lend', True, data=data)
+
+    def get_lending_orders(self, currency):   
+        # https://docs.kucoin.com/#get-active-order        
+
+        data = {
+            'currency':currency
+        }
+
+        return self._get('margin/lend/active', True, data=data)
+
+    def cancel_lend_order(self, orderId):
+        # https://docs.kucoin.com/#cancel-lend-order
+
+        return self._delete('margin/lend/{}'.format(orderId), True)
+
+
     # Websocket Endpoints
 
     def get_ws_endpoint(self, private=False):
-        """Get websocket channel details
-
-        :param private: Name of symbol e.g. KCS-BTC
-        :type private: bool
-
-        https://docs.kucoin.com/#websocket-feed
-
-        .. code:: python
-
-            ws_details = client.get_ws_endpoint(private=True)
-
-        :returns: ApiResponse
-
-        .. code:: python
-
-            {
-                "code": "200000",
-                "data": {
-                    "instanceServers": [
-                        {
-                            "pingInterval": 50000,
-                            "endpoint": "wss://push1-v2.kucoin.net/endpoint",
-                            "protocol": "websocket",
-                            "encrypt": true,
-                            "pingTimeout": 10000
-                        }
-                    ],
-                    "token": "vYNlCtbz4XNJ1QncwWilJnBtmmfe4geLQDUA62kKJsDChc6I4bRDQc73JfIrlFaVYIAE0Gv2--MROnLAgjVsWkcDq_MuG7qV7EktfCEIphiqnlfpQn4Ybg==.IoORVxR2LmKV7_maOR9xOg=="
-                }
-            }
-
-        :raises: KucoinResponseException, KucoinAPIException
-
-        """
+        # https://docs.kucoin.com/#websocket-feed
 
         path = 'bullet-public'
         signed = private
