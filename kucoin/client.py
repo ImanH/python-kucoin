@@ -626,7 +626,7 @@ class Client(object):
 
         return self._get('market/candles', False, data=data)
 
-    # Lending Methods
+    # Lending Endpoints
 
     def get_lending_orderbook(self, currency):
         # https://docs.kucoin.com/#lending-market-data
