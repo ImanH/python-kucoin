@@ -82,15 +82,7 @@ class Client(object):
         return '&'.join(["{}={}".format(key, data[key]) for key in data])
 
     def _generate_signature(self, nonce, method, path, data):
-        """Generate the call signature
-
-        :param path:
-        :param data:
-        :param nonce:
-
-        :return: signature string
-
-        """
+        # Generate the call signature
 
         data_json = ""
         endpoint = path
@@ -198,10 +190,15 @@ class Client(object):
 
     # User Account Endpoints
 
-    def get_accounts(self):
+    def get_accounts(self, currency=None):
         # https://docs.kucoin.com/#accounts
 
-        return self._get('accounts', True)
+        data = {}
+
+        if currency:
+            data['currency'] = currency
+
+        return self._get('accounts', True, data=data)
 
     def get_account(self, account_id):
         # https://docs.kucoin.com/#get-an-account
@@ -560,37 +557,7 @@ class Client(object):
         return self._get('prices', False, data=data)
 
     def get_24hr_stats(self, symbol):
-        """Get 24hr stats for a symbol. Volume is in base currency units. open, high, low are in quote currency units.
-
-        :param symbol: (optional) Name of symbol e.g. KCS-BTC
-        :type symbol: string
-
-        .. code:: python
-
-            stats = client.get_24hr_stats('ETH-BTC')
-
-        :returns: ApiResponse
-
-        Without a symbol param
-
-        .. code:: python
-
-            {
-                "symbol": "BTC-USDT",
-                "changeRate": "0.0128",   # 24h change rate
-                "changePrice": "0.8",     # 24h rises and falls in price (if the change rate is a negative number,
-                                          # the price rises; if the change rate is a positive number, the price falls.)
-                "open": 61,               # Opening price
-                "close": 63.6,            # Closing price
-                "high": "63.6",           # Highest price filled
-                "low": "61",              # Lowest price filled
-                "vol": "244.78",          # Transaction quantity
-                "volValue": "15252.0127"  # Transaction amount
-            }
-
-        :raises: KucoinResponseException, KucoinAPIException
-
-        """
+        # Get 24hr stats for a symbol. Volume is in base currency units. open, high, low are in quote currency units.
 
         data = {
             'symbol': symbol
@@ -599,64 +566,12 @@ class Client(object):
         return self._get('market/stats', False, data=data)
 
     def get_markets(self):
-        """Get supported market list
+        # https://docs.kucoin.com/#get-market-list
 
-        https://docs.kucoin.com/#get-market-list
-
-        .. code:: python
-
-            markets = client.get_markets()
-
-        :returns: ApiResponse
-
-        .. code:: python
-
-            {
-                "data": [
-                    "BTC",
-                    "ETH",
-                    "USDT"
-                ]
-            }
-
-        :raises: KucoinResponseException, KucoinAPIException
-
-        """
         return self._get('markets', False)
 
     def get_order_book(self, symbol):
-        """Get a list of bids and asks aggregated by price for a symbol.
-
-        Returns up to 100 depth each side. Fastest Order book API
-
-        https://docs.kucoin.com/#get-part-order-book-aggregated
-
-        :param symbol: Name of symbol e.g. KCS-BTC
-        :type symbol: string
-
-        .. code:: python
-
-            orders = client.get_order_book('KCS-BTC')
-
-        :returns: ApiResponse
-
-        .. code:: python
-
-            {
-                "sequence": "3262786978",
-                "bids": [
-                    ["6500.12", "0.45054140"],  # [price, size]
-                    ["6500.11", "0.45054140"]
-                ],
-                "asks": [
-                    ["6500.16", "0.57753524"],
-                    ["6500.15", "0.57753524"]
-                ]
-            }
-
-        :raises: KucoinResponseException, KucoinAPIException
-
-        """
+        # https://docs.kucoin.com/#get-part-order-book-aggregated
 
         data = {
             'symbol': symbol
@@ -665,39 +580,7 @@ class Client(object):
         return self._get('market/orderbook/level2_100', False, data=data)
 
     def get_full_order_book(self, symbol):
-        """Get a list of all bids and asks aggregated by price for a symbol.
-
-        This call is generally used by professional traders because it uses more server resources and traffic,
-        and Kucoin has strict access frequency control.
-
-        https://docs.kucoin.com/#get-full-order-book-aggregated
-
-        :param symbol: Name of symbol e.g. KCS-BTC
-        :type symbol: string
-
-        .. code:: python
-
-            orders = client.get_order_book('KCS-BTC')
-
-        :returns: ApiResponse
-
-        .. code:: python
-
-            {
-                "sequence": "3262786978",
-                "bids": [
-                    ["6500.12", "0.45054140"],  # [price size]
-                    ["6500.11", "0.45054140"]
-                ],
-                "asks": [
-                    ["6500.16", "0.57753524"],
-                    ["6500.15", "0.57753524"]
-                ]
-            }
-
-        :raises: KucoinResponseException, KucoinAPIException
-
-        """
+        # https://docs.kucoin.com/#get-full-order-book-aggregated
 
         data = {
             'symbol': symbol
@@ -706,55 +589,7 @@ class Client(object):
         return self._get('market/orderbook/level2', False, data=data)
 
     def get_full_order_book_level3(self, symbol):
-        """Get a list of all bids and asks non-aggregated for a symbol.
-
-        This call is generally used by professional traders because it uses more server resources and traffic,
-        and Kucoin has strict access frequency control.
-
-        https://docs.kucoin.com/#get-full-order-book-atomic
-
-        :param symbol: Name of symbol e.g. KCS-BTC
-        :type symbol: string
-
-        .. code:: python
-
-            orders = client.get_order_book('KCS-BTC')
-
-        :returns: ApiResponse
-
-        .. code:: python
-
-            {
-                "sequence": "1545896707028",
-                "bids": [
-                    [
-                        "5c2477e503aa671a745c4057",   # orderId
-                        "6",                          # price
-                        "0.999"                       # size
-                    ],
-                    [
-                        "5c2477e103aa671a745c4054",
-                        "5",
-                        "0.999"
-                    ]
-                ],
-                "asks": [
-                    [
-                        "5c24736703aa671a745c401e",
-                        "200",
-                        "1"
-                    ],
-                    [
-                        "5c2475c903aa671a745c4033",
-                        "201",
-                        "1"
-                    ]
-                ]
-            }
-
-        :raises: KucoinResponseException, KucoinAPIException
-
-        """
+        # https://docs.kucoin.com/#get-full-order-book-atomic
 
         data = {
             'symbol': symbol
@@ -763,41 +598,7 @@ class Client(object):
         return self._get('market/orderbook/level3', False, data=data)
 
     def get_trade_histories(self, symbol):
-        """List the latest trades for a symbol
-
-        https://docs.kucoin.com/#get-trade-histories
-
-        :param symbol: Name of symbol e.g. KCS-BTC
-        :type symbol: string
-
-        .. code:: python
-
-            orders = client.get_trade_histories('KCS-BTC')
-
-        :returns: ApiResponse
-
-        .. code:: python
-
-            [
-                {
-                    "sequence": "1545896668571",
-                    "price": "0.07",                # Filled price
-                    "size": "0.004",                # Filled amount
-                    "side": "buy",                  # Filled side. The filled side is set to the taker by default.
-                    "time": 1545904567062140823     # Transaction time
-                },
-                {
-                    "sequence": "1545896668578",
-                    "price": "0.054",
-                    "size": "0.066",
-                    "side": "buy",
-                    "time": 1545904581619888405
-                }
-            ]
-
-        :raises: KucoinResponseException, KucoinAPIException
-
-        """
+        # https://docs.kucoin.com/#get-trade-histories
 
         data = {
             'symbol': symbol
@@ -806,55 +607,7 @@ class Client(object):
         return self._get('market/histories', False, data=data)
 
     def get_kline_data(self, symbol, kline_type='5min', start=None, end=None):
-        """Get kline data
-
-        For each query, the system would return at most 1500 pieces of data.
-        To obtain more data, please page the data by time.
-
-        :param symbol: Name of symbol e.g. KCS-BTC
-        :type symbol: string
-        :param kline_type: type of symbol, type of candlestick patterns: 1min, 3min, 5min, 15min, 30min, 1hour, 2hour,
-                           4hour, 6hour, 8hour, 12hour, 1day, 1week
-        :type kline_type: string
-        :param start: Start time as unix timestamp (optional) default start of day in UTC
-        :type start: int
-        :param end: End time as unix timestamp (optional) default now in UTC
-        :type end: int
-
-        https://docs.kucoin.com/#get-historic-rates
-
-        .. code:: python
-
-            klines = client.get_kline_data('KCS-BTC', '5min', 1507479171, 1510278278)
-
-        :returns: ApiResponse
-
-        .. code:: python
-
-            [
-                [
-                    "1545904980",             //Start time of the candle cycle
-                    "0.058",                  //opening price
-                    "0.049",                  //closing price
-                    "0.058",                  //highest price
-                    "0.049",                  //lowest price
-                    "0.018",                  //Transaction amount
-                    "0.000945"                //Transaction volume
-                ],
-                [
-                    "1545904920",
-                    "0.058",
-                    "0.072",
-                    "0.072",
-                    "0.058",
-                    "0.103",
-                    "0.006986"
-                ]
-            ]
-
-        :raises: KucoinResponseException, KucoinAPIException
-
-        """
+        # https://docs.kucoin.com/#get-historic-rates
 
         data = {
             'symbol': symbol
@@ -914,40 +667,7 @@ class Client(object):
     # Websocket Endpoints
 
     def get_ws_endpoint(self, private=False):
-        """Get websocket channel details
-
-        :param private: Name of symbol e.g. KCS-BTC
-        :type private: bool
-
-        https://docs.kucoin.com/#websocket-feed
-
-        .. code:: python
-
-            ws_details = client.get_ws_endpoint(private=True)
-
-        :returns: ApiResponse
-
-        .. code:: python
-
-            {
-                "code": "200000",
-                "data": {
-                    "instanceServers": [
-                        {
-                            "pingInterval": 50000,
-                            "endpoint": "wss://push1-v2.kucoin.net/endpoint",
-                            "protocol": "websocket",
-                            "encrypt": true,
-                            "pingTimeout": 10000
-                        }
-                    ],
-                    "token": "vYNlCtbz4XNJ1QncwWilJnBtmmfe4geLQDUA62kKJsDChc6I4bRDQc73JfIrlFaVYIAE0Gv2--MROnLAgjVsWkcDq_MuG7qV7EktfCEIphiqnlfpQn4Ybg==.IoORVxR2LmKV7_maOR9xOg=="
-                }
-            }
-
-        :raises: KucoinResponseException, KucoinAPIException
-
-        """
+        # https://docs.kucoin.com/#websocket-feed
 
         path = 'bullet-public'
         signed = private
